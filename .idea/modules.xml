@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/cm-data-interfaces.iml" filepath="$PROJECT_DIR$/cm-data-interfaces.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/cm-kafka-poc.iml" filepath="$PROJECT_DIR$/.idea/cm-kafka-poc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/kafka-connect-poc.iml" filepath="$PROJECT_DIR$/kafka-connect-poc.iml" />
     </modules>
   </component>
 </project>
