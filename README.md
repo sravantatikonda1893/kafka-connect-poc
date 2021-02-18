@@ -63,8 +63,6 @@
 
 * Check connector specific config: http://localhost:8083/connectors/{connector-name}/config
 
-* To delete a connector: curl -X DELETE localhost:8083/connectors/user-recs-jdbc-connector
-
 
 5. Go to Kafdrop UI to verify if the messages are in the topic which is configured in the JSON config file under the "topic" attribute.
 
@@ -107,7 +105,7 @@
 
 6. Create a stream with "space" in the email field in the order files:
    
-    * create stream xml_space_emails_stream WITH (PARTITIONS=5) AS select os.ID from orders_stream_topic os where cbs.Email = ' ';
+    * create stream xml_space_emails_stream WITH (PARTITIONS=5) AS select os.ID from orders_stream_topic os where os.Email = ' ';
 
 7. Create a sink connector for sinking the userIds' with empty email, this will create a table "SELECT * FROM "XML_SPACE_EMAILS_STREAM";" mentioned in the config file:
 
@@ -128,11 +126,14 @@
 
 ** Go to tables created SINK:
 
-    SELECT * FROM "XML_SPACE_EMAILS_STREAM";
-    SELECT count(*) FROM "XML_SPACE_EMAILS_STREAM";
+    SELECT * FROM poc_schm.valid_emails;
+    SELECT count(*) FROM poc_schm.valid_emails;
 
-    SELECT * FROM "DB_EMPTY_EMAILS_STREAM";
-    SELECT count(*) FROM "DB_EMPTY_EMAILS_STREAM";
+    SELECT * FROM poc_schm.db_empty_emails;
+    SELECT count(*) FROM poc_schm.db_empty_emails;
+
+    SELECT * FROM poc_schm.valid_emails;
+    SELECT count(*) FROM poc_schm.valid_emails;
 
 
 ** Delete Connector instances:

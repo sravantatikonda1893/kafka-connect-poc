@@ -4,7 +4,7 @@
 		"connection.url": "jdbc:postgresql://192.168.1.170:5432/postgres",
 		"connection.user": "postgres",
 		"connection.password": "123",
-		"table.name.format": "monster_schm.valid_emails",
+		"table.name.format": "poc_schm.valid_emails",
 		"insert.mode": "insert",
 		"auto.create": true,
 		"topics": "VALID_EMAILS_STREAM",
