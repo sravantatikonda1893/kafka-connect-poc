@@ -96,32 +96,26 @@
       from orders_stream_topic os inner join user_records_stream_topics urs within 1 HOURS ON os.Email = urs.email;
     * Create a sink connector for sinking the valid emails, this will create a table "SELECT * FROM "VALID_EMAILS_STREAM";" mentioned in the config file:
 
-            curl -sX POST http://localhost:8084/connectors \
-            -d @valid_emails-sink.json \
-            --header "Content-Type: application/json"
+            curl -sX POST http://localhost:8084/connectors -d @valid_emails-sink.json --header "Content-Type: application/json"
    
     * Go to Kafdrop UI, a new topic named: "VALID_EMAILS_STREAM", as the new messages to the user_records and orders topics flows, the VALID_EMAILS_STREAM will be updated based on the join condition we used.
     
 
 5. Create a stream with "empty"  in the email column in the user records table:
    
-    * create stream db_empty_emails_stream WITH (PARTITIONS=5) AS select jss.user_id from jdbc_source_stream_topics jss where jss.Email = '';"
+    * create stream db_empty_emails_stream WITH (PARTITIONS=5) AS select urst.user_id from USER_RECORDS_STREAM_TOPICS urst where urst.Email = '';
 
 6. Create a stream with "space" in the email field in the order files:
    
-    * create stream xml_space_emails_stream WITH (PARTITIONS=5) AS select os.ID from orders_stream_topic os where cbs.Email = ' ';"
+    * create stream xml_space_emails_stream WITH (PARTITIONS=5) AS select os.ID from orders_stream_topic os where cbs.Email = ' ';
 
 7. Create a sink connector for sinking the userIds' with empty email, this will create a table "SELECT * FROM "XML_SPACE_EMAILS_STREAM";" mentioned in the config file:
 
-   curl -sX POST http://localhost:8084/connectors \
-   -d @db_empty_emails-sink.json \
-   --header "Content-Type: application/json"
+   curl -sX POST http://localhost:8084/connectors -d @db_empty_emails-sink.json --header "Content-Type: application/json"
 
 6. Create a sink connector for sinking the Ids' with whitespace email, this will create a table "select * from "DB_EMPTY_EMAILS_STREAM";" mentioned in the config file:
 
-   curl -sX POST http://localhost:8084/connectors \
-   -d @xml_space_emails-sink.json \
-   --header "Content-Type: application/json"
+   curl -sX POST http://localhost:8084/connectors -d @xml_space_emails-sink.json --header "Content-Type: application/json"
 
 ** PSQL in Postgres container:
 
@@ -133,8 +127,6 @@
     SELECT * FROM pg_catalog.pg_tables;
 
 ** Go to tables created SINK:
-
-    SELECT * FROM pg_catalog.pg_tables;
 
     SELECT * FROM "XML_SPACE_EMAILS_STREAM";
     SELECT count(*) FROM "XML_SPACE_EMAILS_STREAM";

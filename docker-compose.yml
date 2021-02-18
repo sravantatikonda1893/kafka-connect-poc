@@ -135,7 +135,7 @@ services:
       # Uncomment for debugging the connector during development cycle
       # KAFKA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
     volumes:
-      - ./orders/:/tmp/kafka-connect/examples
+      - ./orders/:/tmp/kafka-connect/orders
       - ../container_mount/connect-data:/tmp/connect-data
 
   jdbc-connect:

@@ -1,7 +1,7 @@
 {
 	"config": {
 		"connector.class": "io.streamthoughts.kafka.connect.filepulse.source.FilePulseSourceConnector",
-		"fs.scan.directory.path": "/tmp/kafka-connect/examples/",
+		"fs.scan.directory.path": "/tmp/kafka-connect/orders/",
 		"fs.scan.interval.ms": "10000",
 		"fs.scan.filters": "io.streamthoughts.kafka.connect.filepulse.scanner.local.filter.RegexFileListFilter",
 		"file.filter.regex.pattern": ".*\\.xml$",
@@ -18,3 +18,4 @@
 	},
 	"name": "orders-source-connector"
 }
+
