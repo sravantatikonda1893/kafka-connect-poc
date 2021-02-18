@@ -54,15 +54,11 @@
 
 * Command to run Source Files Connector:
 
-  curl -sX POST http://localhost:8083/connectors \
-  -d @connect-file-pulse-xml.json \
-  --header "Content-Type: application/json"
+  curl -sX POST http://localhost:8083/connectors -d @connect-file-pulse-xml.json --header "Content-Type: application/json"
 
 * Command to run Source JDBC connector: 
   
-  curl -sX POST http://localhost:8084/connectors \
-  -d @users-sync-source.json \
-  --header "Content-Type: application/json"
+  curl -sX POST http://localhost:8084/connectors -d @users-sync-source.json --header "Content-Type: application/json"
 
 
 * Check connector specific config: http://localhost:8083/connectors/{connector-name}/config
