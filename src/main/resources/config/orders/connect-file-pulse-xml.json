@@ -1,0 +1,20 @@
+{
+	"config": {
+		"connector.class": "io.streamthoughts.kafka.connect.filepulse.source.FilePulseSourceConnector",
+		"fs.scan.directory.path": "/tmp/kafka-connect/examples/",
+		"fs.scan.interval.ms": "10000",
+		"fs.scan.filters": "io.streamthoughts.kafka.connect.filepulse.scanner.local.filter.RegexFileListFilter",
+		"file.filter.regex.pattern": ".*\\.xml$",
+		"task.reader.class": "io.streamthoughts.kafka.connect.filepulse.reader.XMLFileInputReader",
+		"xpath.expression": "/orders/order",
+		"offset.strategy": "name",
+		"topic": "orders",
+		"internal.kafka.reporter.bootstrap.servers": "broker:29092",
+		"internal.kafka.reporter.topic": "connect-file-pulse-status",
+		"fs.cleanup.policy.class": "io.streamthoughts.kafka.connect.filepulse.clean.LogCleanupPolicy",
+		"tasks.max": 5,
+		"topic.creation.default.replication.factor": 1,
+		"topic.creation.default.partitions": 5
+	},
+	"name": "orders-source-connector"
+}

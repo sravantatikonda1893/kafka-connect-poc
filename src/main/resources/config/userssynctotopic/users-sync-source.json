@@ -1,0 +1,22 @@
+{
+	"config": {
+		"connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+		"connection.url": "jdbc:postgresql://192.168.1.170:5432/postgres",
+		"connection.user": "postgres",
+		"connection.password": "123",
+		"query": "SELECT user_id,first_name,last_name,email,city from poc_schm.user_recs",
+		"mode":"incrementing",
+		"incrementing.column.name":"user_id",
+		"topic.prefix":"user_records",
+		"tasks.max": 5,
+		"poll.interval.ms":"5000",
+		"timestamp.delay.interval.ms":"1000",
+		"batch.max.rows":"1",
+		"validate.non.null":false,
+		"topic.creation.enable": true,
+		"topic.creation.default.replication.factor": 1,
+		"topic.creation.default.partitions": 5,
+		"errors.log.enable":true
+	},
+	"name": "user-recs-jdbc-connector"
+}

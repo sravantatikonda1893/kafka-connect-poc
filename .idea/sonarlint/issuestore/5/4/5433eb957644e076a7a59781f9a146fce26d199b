@@ -1,0 +1,8 @@
+
+`	java:S1123"FDefine and throw a dedicated exception instead of using a generic one.(É¦—¸ùÿÿÿÿ
+_
+java:S2095"HUse try-with-resources or close this "FileWriter" in a "finally" clause.(¾Å”¾
+b
+java:S2095C"LUse try-with-resources or close this "BufferedReader" in a "finally" clause.(Í®üõ
+J
+java:S1874X"/Remove this use of "isEmpty"; it is deprecated.(íË¼Ğÿÿÿÿÿ

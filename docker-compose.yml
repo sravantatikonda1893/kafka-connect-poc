@@ -1,0 +1,240 @@
+version: '3'
+services:
+  cp-zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - ../container_mount/zookeeper/data:/var/lib/zookeeper/data
+      - ../container_mount/zookeeper/log:/var/lib/zookeeper/log
+
+  cp-broker:
+    image: confluentinc/cp-kafka:latest
+    hostname: broker
+    container_name: broker
+    depends_on:
+      - cp-zookeeper
+    ports:
+      - "29092:29092"
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+    volumes:
+      - ../container_mount/kafka/broker1/data:/var/lib/kafka/data
+
+  cp-broker-1:
+    image: confluentinc/cp-kafka:latest
+    hostname: broker_1
+    container_name: broker_1
+    depends_on:
+      - cp-zookeeper
+    ports:
+      - "29093:29093"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker_1:29093,PLAINTEXT_HOST://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker_1:29093
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+    volumes:
+      - ../container_mount/kafka/broker2/data:/var/lib/kafka/data
+
+  cp-broker-2:
+    image: confluentinc/cp-kafka:latest
+    hostname: broker_2
+    container_name: broker_2
+    depends_on:
+      - cp-zookeeper
+    ports:
+      - "29094:29094"
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker_2:29094,PLAINTEXT_HOST://localhost:9094
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker_2:29094
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+    volumes:
+      - ../container_mount/kafka/broker3/data:/var/lib/kafka/data
+
+  cp-schema-registry:
+    image: confluentinc/cp-schema-registry:latest
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - cp-zookeeper
+      - cp-broker
+      - cp-broker-1
+      - cp-broker-2
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+
+  file-connect:
+    image: streamthoughts/kafka-connect-file-pulse:latest
+    container_name: file-connect
+    hostname: file-connect
+    depends_on:
+      - cp-broker
+      - cp-broker-1
+      - cp-broker-2
+      - cp-schema-registry
+    ports:
+      - "8083:8083"
+      - "8000:8000"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: 'broker:29092,broker_1:29093,broker_2:29094'
+      CONNECT_REST_ADVERTISED_HOST_NAME: file-connect
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: compose-file-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-file-connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-file-connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: docker-file-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      # kafka-connect-file-pulse is installed as a confluent-hub component
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components/,/tmp/kafka-connect/examples/"
+      CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
+      CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
+      # Uncomment for debugging the connector during development cycle
+      # KAFKA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
+    volumes:
+      - ./orders/:/tmp/kafka-connect/examples
+      - ../container_mount/connect-data:/tmp/connect-data
+
+  jdbc-connect:
+    image: confluentinc/cp-kafka-connect:latest
+    container_name: jdbc-connect
+    hostname: jdbc-connect
+    depends_on:
+      - cp-broker
+      - cp-broker-1
+      - cp-broker-2
+      - cp-schema-registry
+      - cp-zookeeper
+    ports:
+      - "8084:8084"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: 'broker:29092,broker_1:29093,broker_2:29094'
+      CONNECT_REST_ADVERTISED_HOST_NAME: jdbc-connect
+      CONNECT_REST_PORT: 8084
+      CONNECT_GROUP_ID: compose-jdbc-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-jdbc-connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-jdbc-connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: docker-jdbc-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONNECT_PLUGIN_PATH: '/usr/share/java,/etc/kafka-connect/jars'
+    volumes:
+      - ../container_mount/jdbc-connect-jars/confluentinc-kafka-connect-jdbc-10.0.1/lib:/etc/kafka-connect/jars
+
+  primary-ksqldb-server:
+    image: confluentinc/cp-ksql-server:5.2.2
+    hostname: primary-ksqldb-server
+    container_name: primary-ksqldb-server
+    networks: [ "default" ]
+    depends_on:
+      - cp-broker
+      - cp-broker-1
+      - cp-broker-2
+      - cp-schema-registry
+    ports:
+      - "8088:8088"
+    environment:
+      KSQL_LISTENERS: http://0.0.0.0:8088
+      KSQL_BOOTSTRAP_SERVERS: 'broker:29092,broker_1:29093,broker_2:29094'
+      KSQL_KSQL_SERVICE_ID: confluent_rmoff_01
+      KSQL_CUB_KAFKA_TIMEOUT: 300
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      KSQL_KSQL_COMMIT_INTERVAL_MS: 2000
+      KSQL_KSQL_SINK_PARTITIONS: 1
+      KSQL_KSQL_CACHE_MAX_BYTES_BUFFERING: 10000000
+      KSQL_KSQL_STREAMS_AUTO_OFFSET_RESET: earliest
+      KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+      KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+
+  ksqldb-cli:
+    image: confluentinc/cp-ksql-cli:5.2.2
+    container_name: ksqldb-cli
+    networks: [ "default" ]
+    depends_on:
+      - cp-broker
+      - cp-broker-1
+      - cp-broker-2
+      - cp-schema-registry
+      - primary-ksqldb-server
+    entrypoint: /bin/sh
+    tty: true
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    hostname: kafdrop-ui
+    container_name: kafdrop-ui
+    restart: "no"
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: 'broker:29092,broker_1:29093,broker_2:29094'
+    depends_on:
+      - cp-broker
+      - cp-broker-1
+      - cp-broker-2
+
+  postgres:
+    image: postgres
+    hostname: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=postgres
+      - PGDATA=/pgdata
+    volumes:
+     - ../container_mount/pgdata:/pgdata
