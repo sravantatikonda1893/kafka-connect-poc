@@ -29,7 +29,7 @@
     * primary-ksqldb-server, and an additional-ksqldb-server containers to run KSql queries
     * ksqldb-cli: CLI just like any DB CLI to interact with topics on Kafka cluster
     * kafdrop: A simple GUI service to see brokers, topics and data being produced and consumed in the topics with offsets and partitions for topics. Accessible through: http://localhost:9000/
-      ![alt text](https://github.com/sravantatikonda1893/kafka-connect/blob/master/kafdrop-dash-ui.png?raw=true)
+      ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/kafdrop-dash-ui.png?raw=true)
 
     * postgres: A DB container for Postgres out of 13 version to be used by the JDBC connect container to pull data from DB and push it to corresponding topic/s.
 
@@ -37,14 +37,14 @@
 
 **Steps to try it out this POC project on Kafka**:
 
-1. Go to https://github.com/-OCS/kafka-connect/tree/main/src/main/resources/docker-compose.yml file
+1. Go to https://github.com/-OCS/kafka-connect-poc/tree/main/src/main/resources/docker-compose.yml file
 2. Change the volume paths to your local file system paths
 3. Docker commands:
     * To run all containers, run this command "docker-compose up -d"
     * To run a specific container, run this command "docker-compose up -d {service-name}"
       Ex: docker-compose up -d cp-zookeeper
     * Check all the current containers' status: "docker ps"
-      ![alt text](https://github.com/sravantatikonda1893/kafka-connect/blob/master/docker%20container%20running.png?raw=true)
+      ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/docker%20container%20running.png?raw=true)
 
     * Check for specific container logs: "docker logs -f {service-name}"
     * To login to a container: "docker exec -it {container-name} bash"
@@ -73,7 +73,7 @@
 5. Go to Kafdrop UI to verify if the messages are in the topic which is configured in the JSON config file under the "topic" attribute.
 
 6. Start the SpringBoot service, once started open the Swagger UI at: http://localhost:9999/swagger-ui.html, use this API to generate sample order records in XML files. Populate fileds(filesCount: for number of files to be generated, recordCount: Number of records in each file, usersCount: Number of user records to be loaded into the database which acts as a source DB) and click try it out, XML files would be generated. Make sure this path is mounted to the path to which the files-connect is mounted on under volumes section. So that, it will scan and push them to corresponding topic.
-   ![alt text](https://github.com/sravantatikonda1893/kafka-connect/blob/master/Swagger-API-UI.png?raw=true)
+   ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/Swagger-API-UI.png?raw=true)
 
 
 **KSQL DB**:
@@ -161,4 +161,4 @@
 
 ** Flow Diagram:
     
-![alt text](https://github.com/sravantatikonda1893/kafka-connect/blob/master/Flow%20Diagram.png?raw=true)
+![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/Flow%20Diagram.png?raw=true)

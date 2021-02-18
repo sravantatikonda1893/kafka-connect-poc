@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.poc.interfaces</groupId>
-	<artifactId>kafka-connect</artifactId>
+	<artifactId>kafka-connect-poc</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>kafka-connect</name>
+	<name>kafka-connect-poc</name>
 	<description>Demo project for Kafka Connect</description>
 	<properties>
 		<java.version>11</java.version>

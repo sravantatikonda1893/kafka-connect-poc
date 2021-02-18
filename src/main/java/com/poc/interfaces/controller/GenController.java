@@ -36,7 +36,7 @@ public class GenController {
   public ResponseEntity<Boolean> load(@PathVariable Integer usersCount,
       @PathVariable Integer filesCount, @PathVariable Integer recordCount) throws Exception {
     xmlRecordsGenerator.loadCSVValues(
-        "/Users/sravantatikonda/POC/kafka-connect/src/main/resources/loaderinput/");
+        "/Users/sravantatikonda/POC/kafka-connect-poc/src/main/resources/loaderinput/");
     xmlRecordsGenerator.genXmlFiles(filesCount, recordCount);
     xmlRecordsGenerator.loadUserTable(usersCount);
     log.info("Successfully created");
