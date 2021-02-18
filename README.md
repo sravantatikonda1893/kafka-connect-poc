@@ -93,7 +93,7 @@
 4. Create a valid_emails topic out of valid_emails_stream by joining both the tables
 
     * create stream valid_emails_stream WITH (PARTITIONS=5) AS select os.email  
-      from orders_stream_topic os inner join jdbc_source_stream_topics jss within 1 HOURS ON cbs.Email=jss.email;
+      from orders_stream_topic os inner join user_records_stream_topics urs within 1 HOURS ON cbs.Email=urs.email;
     * Create a sink connector for sinking the valid emails, this will create a table "SELECT * FROM "VALID_EMAILS_STREAM";" mentioned in the config file:
 
             curl -sX POST http://localhost:8084/connectors \
