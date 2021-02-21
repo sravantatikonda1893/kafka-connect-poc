@@ -15,7 +15,12 @@
   <name>kafka-connect-poc</name>
   <description>Demo project for Kafka Connect</description>
   <properties>
-    <java.version>11</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>1.8</java.version>
+    <!--set this to your docker acct name-->
+    <docker.image.prefix>sravankf244</docker.image.prefix>
+    <!--Set to name of project-->
+    <docker.image.name>kafka-connect-poc</docker.image.name>
   </properties>
   <dependencies>
     <dependency>
@@ -83,175 +88,62 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>0.20.0</version>
         <configuration>
-          <excludes>
-            <exclude>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-            </exclude>
-          </excludes>
+          <!--<dockerHost>http://127.0.0.1:2375</dockerHost>-->
+          <dockerHost>unix:///var/run/docker.sock</dockerHost>
+          <verbose>true</verbose>
+          <images>
+            <image>
+              <name>${docker.image.prefix}/${docker.image.name}</name>
+              <build>
+                <dockerFileDir>${project.basedir}/target/dockerfile/</dockerFileDir>
+
+                <!--copies artifact to docker build dir in target-->
+                <assembly>
+                  <descriptorRef>artifact</descriptorRef>
+                </assembly>
+                <tags>
+                  <tag>latest</tag>
+                  <tag>${project.version}</tag>
+                </tags>
+              </build>
+            </image>
+          </images>
         </configuration>
       </plugin>
-
-
       <plugin>
-
-        <groupId>org.codehaus.mojo</groupId>
-
-        <artifactId>exec-maven-plugin</artifactId>
-
-        <version>1.6.0</version>
-
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>1.5</version>
         <executions>
-
-          <!-- Remove existing image from local repo -->
-
           <execution>
-
-            <id>docker-clean</id>
-
-            <phase>install</phase>
-
+            <phase>prepare-package</phase>
             <goals>
-
-              <goal>exec</goal>
-
+              <goal>execute</goal>
             </goals>
-
-            <configuration>
-
-              <executable>docker</executable>
-
-              <workingDirectory>${project.basedir}</workingDirectory>
-
-              <arguments>
-
-                <argument>rmi</argument>
-
-                <argument>${project.groupId}/${project.artifactId}:${project.version}</argument>
-
-              </arguments>
-
-            </configuration>
-
           </execution>
-
-
-          <!--
-
-            Create new docker image using Dockerfile which must be present in current working directory.
-
-            Tag the image using maven project version information.
-
-          -->
-
-          <execution>
-
-            <id>docker-build</id>
-
-            <phase>install</phase>
-
-            <goals>
-
-              <goal>exec</goal>
-
-            </goals>
-
-            <configuration>
-
-              <executable>docker</executable>
-
-              <workingDirectory>${project.basedir}</workingDirectory>
-
-              <arguments>
-
-                <argument>build</argument>
-
-                <argument>-t</argument>
-
-                <argument>${project.groupId}/${project.artifactId}:${project.version}</argument>
-
-                <argument>.</argument>
-
-              </arguments>
-
-            </configuration>
-
-          </execution>
-
-          <!-- Login and Push the image to a docker repo. -->
-
-          <execution>
-
-            <id>docker-login</id>
-
-            <phase>deploy</phase>
-
-            <goals>
-
-              <goal>exec</goal>
-
-            </goals>
-
-            <configuration>
-
-              <executable>docker</executable>
-
-              <workingDirectory>${project.basedir}</workingDirectory>
-
-              <arguments>
-
-                <argument>login</argument>
-
-                <argument>-u</argument>
-
-                <argument>${docker.user}</argument>
-
-                <argument>-p</argument>
-
-                <argument>${docker.password}</argument>
-
-                <argument>${docker.url}</argument>
-
-              </arguments>
-
-            </configuration>
-
-          </execution>
-
-          <execution>
-
-            <id>docker-push</id>
-
-            <phase>deploy</phase>
-
-            <goals>
-
-              <goal>exec</goal>
-
-            </goals>
-
-            <configuration>
-
-              <executable>docker</executable>
-
-              <workingDirectory>${project.basedir}</workingDirectory>
-              <arguments>
-
-                <argument>push</argument>
-
-                <argument>${project.groupId}/${project.artifactId}:${project.version}</argument>
-
-              </arguments>
-
-            </configuration>
-
-          </execution>
-
         </executions>
-
+        <configuration>
+          <scripts>
+            <script>file:///${project.basedir}/src/main/scripts/BuildDockerfile.groovy</script>
+          </scripts>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <!-- any version of Groovy \>= 1.5.0 should work here -->
+            <version>2.4.8</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
+    <finalName>kafka-connect-poc</finalName>
   </build>
-
 </project>

@@ -151,3 +151,21 @@
 ** Flow Diagram:
     
 ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/Flow%20Diagram.png?raw=true)
+
+** Modify the settings.xml file under .m2 folder:
+    Use the sample in the repo if not existing in your local and modify the below tags with your username and password for the docker hub
+        
+        <server>
+            <id>docker.io</id>
+            <username>sravankf244</username>
+            <password>{ur docker pwd}</password>
+        </server>
+
+** Build the jar and docker image:
+    
+    mvn clean package docker:build
+
+** Push the docker image to docker hub:
+
+    mvn clean package docker:push
+
