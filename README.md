@@ -138,22 +138,23 @@
 
 ** Delete Connector instances:
 
-    curl -X DELETE localhost:8084/connectors/user-recs-jdbc-connector
+    - curl -X DELETE localhost:8084/connectors/user-recs-jdbc-connector
 
-    curl -X DELETE localhost:8083/connectors/orders-source-connector
+    - curl -X DELETE localhost:8083/connectors/orders-source-connector
 
-    curl -X DELETE localhost:8084/connectors/DB_EMPTY_EMAILS_STREAM-sink-connector
+    - curl -X DELETE localhost:8084/connectors/DB_EMPTY_EMAILS_STREAM-sink-connector
 
-    curl -X DELETE localhost:8084/connectors/XML_SPACE_EMAILS_STREAM-sink-connector
+    - curl -X DELETE localhost:8084/connectors/XML_SPACE_EMAILS_STREAM-sink-connector
 
-    curl -X DELETE localhost:8084/connectors/VALID_EMAILS_STREAM-sink-connector
+    - curl -X DELETE localhost:8084/connectors/VALID_EMAILS_STREAM-sink-connector
 
 ** Flow Diagram:
     
 ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/Flow%20Diagram.png?raw=true)
 
 ** Modify the settings.xml file under .m2 folder:
-    Use the sample in the repo if not existing in your local and modify the below tags with your username and password for the docker hub
+     
+    - Use the sample in the repo if not existing in your local and modify the below tags with your username and password for the docker hub
         
         <server>
             <id>docker.io</id>
@@ -163,9 +164,19 @@
 
 ** Build the jar and docker image:
     
-    mvn clean package docker:build
+    - mvn clean package docker:build
 
 ** Push the docker image to docker hub:
 
-    mvn clean package docker:push
+    - mvn clean package docker:push
+
+** Setting up Kubernetes in MacBook:
+    - Install Oracle VirtualBox : brew install --cask virtualbox
+    - Install Kubectl: brew install kubectl
+    - Install Minikube: curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.27.0/minikube-darwin-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+    - Start Minikube: minikube start
+
+
+** Troubleshooting: 
+     - If the "minikube start" failed with "Error starting host", run the command "open ~/.minikube/" and delete the "machines" directory.
 
