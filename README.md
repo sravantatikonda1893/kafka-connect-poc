@@ -51,17 +51,17 @@
     * To kill and remove all containers: "docker-compose down --remove-orphans"
 
 4. To create a connector instance for ether source or sink connector, use CURL command with config file.
-
-* Command to run Source Files Connector:
+   
+ *Command to run Source Files Connector*:
 
   curl -sX POST http://localhost:8083/connectors -d @connect-file-pulse-xml.json --header "Content-Type: application/json"
 
-* Command to run Source JDBC connector: 
+ *Command to run Source JDBC connector*: 
   
   curl -sX POST http://localhost:8084/connectors -d @users-sync-source.json --header "Content-Type: application/json"
 
 
-* Check connector specific config: http://localhost:8083/connectors/{connector-name}/config
+ *Check connector specific config: http://localhost:8083/connectors/{connector-name}/config*:
 
 
 5. Go to Kafdrop UI to verify if the messages are in the topic which is configured in the JSON config file under the "topic" attribute.
@@ -72,23 +72,23 @@
 
 **KSQL DB**:
 
-1. **Open KSQL CLI**:
+1. *Open KSQL CLI*:
    
    * docker exec -it ksqldb-cli ksql http://primary-ksqldb-server:8088
 
-2. Some commands:
+2. *Some commands*:
     
     * list topics;
     * list streams;
 
-3. Create stream out of both the topics:
+3. *Create stream out of both the topics*:
 
     * create stream orders_stream_topic WITH(KAFKA_TOPIC='orders',VALUE_FORMAT='AVRO');
     * select * from orders_stream_topic;
     * create stream user_records_stream_topics WITH(KAFKA_TOPIC='user_records',VALUE_FORMAT='AVRO');
     * select * from user_records_stream_topics;
 
-4. Create a valid_emails topic out of valid_emails_stream by joining both the tables
+4. *Create a valid_emails topic out of valid_emails_stream by joining both the tables*:
 
     * create stream valid_emails_stream WITH (PARTITIONS=5) AS select os.email  
       from orders_stream_topic os inner join user_records_stream_topics urs within 1 HOURS ON os.Email = urs.email;
@@ -99,32 +99,32 @@
     * Go to Kafdrop UI, a new topic named: "VALID_EMAILS_STREAM", as the new messages to the user_records and orders topics flows, the VALID_EMAILS_STREAM will be updated based on the join condition we used.
     
 
-5. Create a stream with "empty"  in the email column in the user records table:
+5. *Create a stream with "empty"  in the email column in the user records table*:
    
     * create stream db_empty_emails_stream WITH (PARTITIONS=5) AS select urst.user_id from USER_RECORDS_STREAM_TOPICS urst where urst.Email = '';
 
-6. Create a stream with "space" in the email field in the order files:
+6. *Create a stream with "space" in the email field in the order files*:
    
     * create stream xml_space_emails_stream WITH (PARTITIONS=5) AS select os.ID from orders_stream_topic os where os.Email = ' ';
 
-7. Create a sink connector for sinking the userIds' with empty email, this will create a table "SELECT * FROM "XML_SPACE_EMAILS_STREAM";" mentioned in the config file:
+7. *Create a sink connector for sinking the userIds' with empty email, this will create a table "SELECT * FROM "XML_SPACE_EMAILS_STREAM";" mentioned in the config file*:
 
    curl -sX POST http://localhost:8084/connectors -d @db_empty_emails-sink.json --header "Content-Type: application/json"
 
-6. Create a sink connector for sinking the Ids' with whitespace email, this will create a table "select * from "DB_EMPTY_EMAILS_STREAM";" mentioned in the config file:
+6. *Create a sink connector for sinking the Ids' with whitespace email, this will create a table "select * from "DB_EMPTY_EMAILS_STREAM";" mentioned in the config file*:
 
    curl -sX POST http://localhost:8084/connectors -d @xml_space_emails-sink.json --header "Content-Type: application/json"
 
-** PSQL in Postgres container:
+**PSQL in Postgres container**:
 
     * Login to the container:    docker exec -it postgres  bash
     * Go to PSQL:                psql -h localhost -p 5432 -U postgres
 
-** Get all tables in Postgres:
+**Get all tables in Postgres**:
 
     SELECT * FROM pg_catalog.pg_tables;
 
-** Go to tables created SINK:
+**Go to tables created SINK**:
 
     SELECT * FROM poc_schm.valid_emails;
     SELECT count(*) FROM poc_schm.valid_emails;
@@ -136,7 +136,7 @@
     SELECT count(*) FROM poc_schm.valid_emails;
 
 
-** Delete Connector instances:
+**Delete Connector instances**:
 
     - curl -X DELETE localhost:8084/connectors/user-recs-jdbc-connector
 
@@ -148,11 +148,11 @@
 
     - curl -X DELETE localhost:8084/connectors/VALID_EMAILS_STREAM-sink-connector
 
-** Flow Diagram:
+**Flow Diagram**:
     
 ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/Flow%20Diagram.png?raw=true)
 
-** Modify the settings.xml file under .m2 folder:
+**Modify the settings.xml file under .m2 folder**:
      
     - Use the sample in the repo if not existing in your local and modify the below tags with your username and password for the docker hub
         
@@ -162,21 +162,20 @@
             <password>{ur docker pwd}</password>
         </server>
 
-** Build the jar and docker image:
+**Build the jar and docker image**:
     
     - mvn clean package docker:build
 
-** Push the docker image to docker hub:
+**Push the docker image to docker hub**:
 
     - mvn clean package docker:push
 
-** Setting up Kubernetes in MacBook:
+**Setting up Kubernetes in MacBook**:
     - Install Oracle VirtualBox : brew install --cask virtualbox
     - Install Kubectl: brew install kubectl
     - Install Minikube: curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.27.0/minikube-darwin-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
     - Start Minikube: minikube start
 
 
-** Troubleshooting: 
+**Troubleshooting**: 
      - If the "minikube start" failed with "Error starting host", run the command "open ~/.minikube/" and delete the "machines" directory.
-
