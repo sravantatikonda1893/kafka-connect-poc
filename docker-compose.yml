@@ -19,7 +19,14 @@ services:
     hostname: broker
     container_name: broker
     depends_on:
-      - cp-zookeeper
+      cp-zookeeper:
+        condition: service_started
+    healthcheck:
+      test:
+        [ "CMD-SHELL", "kafka-topics --list --zookeeper zookeeper 2181" ]
+      interval: 30s
+      timeout: 10s
+      retries: 4
     ports:
       - "29092:29092"
       - "9092:9092"
@@ -42,7 +49,16 @@ services:
     hostname: broker_1
     container_name: broker_1
     depends_on:
-      - cp-zookeeper
+      cp-zookeeper:
+        condition: service_started
+      cp-broker:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [ "CMD-SHELL", "kafka-topics --list --zookeeper zookeeper 2181" ]
+      interval: 30s
+      timeout: 10s
+      retries: 4
     ports:
       - "29093:29093"
       - "9093:9093"
@@ -65,7 +81,16 @@ services:
     hostname: broker_2
     container_name: broker_2
     depends_on:
-      - cp-zookeeper
+      cp-zookeeper:
+        condition: service_started
+      cp-broker-1:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [ "CMD-SHELL", "kafka-topics --list --zookeeper zookeeper 2181" ]
+      interval: 30s
+      timeout: 10s
+      retries: 4
     ports:
       - "29094:29094"
       - "9094:9094"
@@ -87,11 +112,16 @@ services:
     image: confluentinc/cp-schema-registry:latest
     hostname: schema-registry
     container_name: schema-registry
+    restart: always
     depends_on:
-      - cp-zookeeper
-      - cp-broker
-      - cp-broker-1
-      - cp-broker-2
+      cp-zookeeper:
+        condition: service_started
+      cp-broker:
+        condition: service_healthy
+      cp-broker-1:
+        condition: service_healthy
+      cp-broker-2:
+        condition: service_healthy
     ports:
       - "8081:8081"
     environment:
@@ -102,11 +132,16 @@ services:
     image: streamthoughts/kafka-connect-file-pulse:latest
     container_name: file-connect
     hostname: file-connect
+    restart: always
     depends_on:
-      - cp-broker
-      - cp-broker-1
-      - cp-broker-2
-      - cp-schema-registry
+      cp-broker:
+        condition: service_healthy
+      cp-broker-1:
+        condition: service_healthy
+      cp-broker-2:
+        condition: service_healthy
+      cp-schema-registry:
+        condition: service_started
     ports:
       - "8083:8083"
       - "8000:8000"
@@ -136,18 +171,23 @@ services:
       # KAFKA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
     volumes:
       - ./orders/:/tmp/kafka-connect/orders
-      - ../container_mount/connect-data:/tmp/connect-data
 
   jdbc-connect:
     image: confluentinc/cp-kafka-connect:latest
     container_name: jdbc-connect
     hostname: jdbc-connect
+    restart: always
     depends_on:
-      - cp-broker
-      - cp-broker-1
-      - cp-broker-2
-      - cp-schema-registry
-      - cp-zookeeper
+      cp-broker:
+        condition: service_healthy
+      cp-broker-1:
+        condition: service_healthy
+      cp-broker-2:
+        condition: service_healthy
+      cp-schema-registry:
+        condition: service_started
+      cp-zookeeper:
+        condition: service_started
     ports:
       - "8084:8084"
     environment:
@@ -179,10 +219,14 @@ services:
     container_name: primary-ksqldb-server
     networks: [ "default" ]
     depends_on:
-      - cp-broker
-      - cp-broker-1
-      - cp-broker-2
-      - cp-schema-registry
+      cp-broker:
+        condition: service_healthy
+      cp-broker-1:
+        condition: service_healthy
+      cp-broker-2:
+        condition: service_healthy
+      cp-schema-registry:
+        condition: service_started
     ports:
       - "8088:8088"
     environment:
@@ -203,11 +247,16 @@ services:
     container_name: ksqldb-cli
     networks: [ "default" ]
     depends_on:
-      - cp-broker
-      - cp-broker-1
-      - cp-broker-2
-      - cp-schema-registry
-      - primary-ksqldb-server
+      cp-broker:
+        condition: service_healthy
+      cp-broker-1:
+        condition: service_healthy
+      cp-broker-2:
+        condition: service_healthy
+      cp-schema-registry:
+        condition: service_started
+      primary-ksqldb-server:
+        condition: service_started
     entrypoint: /bin/sh
     tty: true
 
@@ -215,15 +264,18 @@ services:
     image: obsidiandynamics/kafdrop
     hostname: kafdrop-ui
     container_name: kafdrop-ui
-    restart: "no"
+    restart: always
+    depends_on:
+      cp-broker:
+        condition: service_healthy
+      cp-broker-1:
+        condition: service_healthy
+      cp-broker-2:
+        condition: service_healthy
     ports:
       - "9000:9000"
     environment:
       KAFKA_BROKERCONNECT: 'broker:29092,broker_1:29093,broker_2:29094'
-    depends_on:
-      - cp-broker
-      - cp-broker-1
-      - cp-broker-2
 
   postgres:
     image: postgres
