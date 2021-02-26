@@ -323,8 +323,10 @@ services:
       - elasticsearch
 
   elasticsearch-connect:
-    container_name: kafka-connect
-    image: confluentinc/cp-kafka-connect:5.3.1
+    hostname: elasticsearch-connect
+    container_name: elasticsearch-connect
+    image: confluentinc/cp-kafka-connect:latest
+    restart: always
     ports:
       - 8085:8085
     depends_on:
