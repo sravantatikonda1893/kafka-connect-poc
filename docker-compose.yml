@@ -211,7 +211,7 @@ services:
       CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       CONNECT_PLUGIN_PATH: '/usr/share/java,/etc/kafka-connect/jars'
     volumes:
-      - ../container_mount/jdbc-connect-jars/confluentinc-kafka-connect-jdbc-10.0.1/lib:/etc/kafka-connect/jars
+      - ../container_mount/plugins/confluentinc-kafka-connect-jdbc-10.0.1/lib:/etc/kafka-connect/jars
 
   primary-ksqldb-server:
     image: confluentinc/cp-ksql-server:5.2.2
@@ -347,8 +347,11 @@ services:
       CONNECT_CONFIG_STORAGE_TOPIC: docker-elasticsearch-connect-configs
       CONNECT_OFFSET_STORAGE_TOPIC: docker-elasticsearch-connect-offsets
       CONNECT_STATUS_STORAGE_TOPIC: docker-elasticsearch-connect-status
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
       CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
       CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_KEY_CONVERTER-SCHEMAS_ENABLE: "false"
@@ -359,15 +362,11 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
-      CONNECT_PLUGIN_PATH: '/usr/share/java'
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components/"
       # Interceptor config
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-5.3.1.jar
     volumes:
-      - ../container_mount/elasticsearch-connect-plugins:/connect-plugins
-
-
-volumes:
-  elasticsearch-data:
-    driver: local
+      - ../container_mount/plugins/confluentinc-kafka-connect-elasticsearch-11.0.2/lib:/connect-plugins

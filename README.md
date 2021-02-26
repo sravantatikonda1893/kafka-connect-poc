@@ -182,3 +182,6 @@
 
 **Troubleshooting**: 
      - If the "minikube start" failed with "Error starting host", run the command "open ~/.minikube/" and delete the "machines" directory.
+
+
+curl -sX POST http://localhost:8085/connectors -d @elasticsearch-sink.json --header "Content-Type: application/json"

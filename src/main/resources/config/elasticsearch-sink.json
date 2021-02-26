@@ -1,13 +1,15 @@
 {
-  "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
-  "type.name": "index_sink",
-  "key.converter.schemas.enable": "false",
-  "topics": "",
-  "tasks.max": "1",
-  "value.converter.schemas.enable": "false",
-  "name": "elastic-sink",
-  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-  "connection.url": "http://localhost:9200",
-  "key.converter": "org.apache.kafka.connect.converters.IntegerConverter",
-  "schema.ignore": "true"
+  "config": {
+    "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+    "type.name": "valid_emails_index",
+    "key.converter.schemas.enable": "false",
+    "topics": "VALID_EMAILS_STREAM",
+    "tasks.max": "1",
+    "value.converter.schemas.enable": "false",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "connection.url": "http://192.168.1.170:9200",
+    "key.converter": "org.apache.kafka.connect.converters.IntegerConverter",
+    "schema.ignore": "true"
+  },
+  "name": "elastic-sink"
 }
