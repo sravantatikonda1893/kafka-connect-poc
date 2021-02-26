@@ -32,8 +32,10 @@
       ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/kafdrop-dash-ui.png?raw=true)
 
     * postgres: A DB container for Postgres out of 13 version to be used by the JDBC connect container to pull data from DB and push it to corresponding topic/s.
-
-    * Volumes: With this, even after the containers are scrapped off, the data is still persisted outside the container as this will mount from the local machine to the container
+    * elasticsearch: A container running the search engine which stores data as documents in different indices(index -> table in RDBMS)
+    * kibana: A container running a GUI based service which acts as a visualization dashboard for Elasticsearch
+    * kafka-connect-poc: A container running a springboot based service to create generate users in postgres DB and orders in XML files````
+    * Volumes: With this option, even after the containers are scrapped off, the data is still persisted outside the container as this will mount from the local machine to the container
 
 **Steps to try it out this POC project on Kafka**:
 
@@ -66,8 +68,29 @@
 
 5. Go to Kafdrop UI to verify if the messages are in the topic which is configured in the JSON config file under the "topic" attribute.
 
-6. Start the SpringBoot service, once started open the Swagger UI at: http://localhost:9999/swagger-ui.html, use this API to generate sample order records in XML files. Populate fileds(filesCount: for number of files to be generated, recordCount: Number of records in each file, usersCount: Number of user records to be loaded into the database which acts as a source DB) and click try it out, XML files would be generated. Make sure this path is mounted to the path to which the files-connect is mounted on under volumes section. So that, it will scan and push them to corresponding topic.
-   ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/Swagger-API-UI.png?raw=true)
+**Start the POC service**:
+
+    - Modify the settings.xml file under .m2 folder**:
+    
+    - Use the sample in the repo if not existing in your local and modify the below tags with your username and password for the docker hub
+
+     <server>
+        <id>docker.io</id>
+        <username>sravankf244</username>
+        <password>{ur docker pwd}</password>
+    </server>
+
+    - Build the jar and docker image: mvn clean package docker:build 
+      
+    - Push the docker image to docker hub: mvn clean package docker:push
+
+    - docker run -t -d --name kafka-connect-poc sravankf244/kafka-connect-poc:latest
+
+    - To access the container: docker exec -it kafka-connect-poc sh
+
+    - Once started open the Swagger UI at: http://localhost:9999/swagger-ui.html, use this API to generate sample order records in XML files. Populate fileds(filesCount: for number of files to be generated, recordCount: Number of records in each file, usersCount: Number of user records to be loaded into the database which acts as a source DB) and click try it out, XML files would be generated. Make sure this path is mounted to the path to which the files-connect is mounted on under volumes section. So that, it will scan and push them to corresponding topic.
+
+![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/Swagger-API-UI.png?raw=true)
 
 
 **KSQL DB**:
@@ -88,7 +111,7 @@
     * create stream user_records_stream_topics WITH(KAFKA_TOPIC='user_records',VALUE_FORMAT='AVRO');
     * select * from user_records_stream_topics;
 
-4. *Create a valid_emails topic out of valid_emails_stream by joining both the tables*:
+4. *Create a valid_emails topic out of valid_emails_stream by joining both the tables*:VALID_EMAILS_STREAM
 
     * create stream valid_emails_stream WITH (PARTITIONS=5) AS select os.email  
       from orders_stream_topic os inner join user_records_stream_topics urs within 1 HOURS ON os.Email = urs.email;
@@ -107,11 +130,11 @@
    
     * create stream xml_space_emails_stream WITH (PARTITIONS=5) AS select os.ID from orders_stream_topic os where os.Email = ' ';
 
-7. *Create a sink connector for sinking the userIds' with empty email, this will create a table "SELECT * FROM "XML_SPACE_EMAILS_STREAM";" mentioned in the config file*:
-
+7. *Create a sink connector for sinking the userIds' with empty email, this will create a table "SELECT * FROM "DB_EMPTY_EMAILS_STREAM";" mentioned in the config file*:
+   
    curl -sX POST http://localhost:8084/connectors -d @db_empty_emails-sink.json --header "Content-Type: application/json"
 
-6. *Create a sink connector for sinking the Ids' with whitespace email, this will create a table "select * from "DB_EMPTY_EMAILS_STREAM";" mentioned in the config file*:
+6. *Create a sink connector for sinking the Ids' with whitespace email, this will create a table "select * from "XML_SPACE_EMAILS_STREAM";" mentioned in the config file*:
 
    curl -sX POST http://localhost:8084/connectors -d @xml_space_emails-sink.json --header "Content-Type: application/json"
 
@@ -122,7 +145,7 @@
 
 **Get all tables in Postgres**:
 
-    SELECT * FROM pg_catalog.pg_tables;
+    SELECT * FROM pg_catalog.pg_tables where schemaname='poc_schm';
 
 **Go to tables created SINK**:
 
@@ -132,9 +155,16 @@
     SELECT * FROM poc_schm.db_empty_emails;
     SELECT count(*) FROM poc_schm.db_empty_emails;
 
-    SELECT * FROM poc_schm.valid_emails;
-    SELECT count(*) FROM poc_schm.valid_emails;
+    SELECT * FROM poc_schm.xml_space_emails;
+    SELECT count(*) FROM poc_schm.xml_space_emails;
 
+**Sinking topic stream data to ElasticSearch index**:
+    
+    curl -sX POST http://localhost:8085/connectors -d @elasticsearch-sink.json --header "Content-Type: application/json"
+
+    Go to Kibana Dashboard and check the index: 
+
+![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/KibanaIndex.png?raw=true)
 
 **Delete Connector instances**:
 
@@ -148,29 +178,14 @@
 
     - curl -X DELETE localhost:8084/connectors/VALID_EMAILS_STREAM-sink-connector
 
+    - curl -X DELETE localhost:8085/connectors/elasticsearch-sink-connector
+
 **Flow Diagram**:
     
 ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/Flow%20Diagram.png?raw=true)
 
-**Modify the settings.xml file under .m2 folder**:
-     
-    - Use the sample in the repo if not existing in your local and modify the below tags with your username and password for the docker hub
-        
-        <server>
-            <id>docker.io</id>
-            <username>sravankf244</username>
-            <password>{ur docker pwd}</password>
-        </server>
-
-**Build the jar and docker image**:
-    
-    - mvn clean package docker:build
-
-**Push the docker image to docker hub**:
-
-    - mvn clean package docker:push
-
 **Setting up Kubernetes in MacBook**:
+
     - Install Oracle VirtualBox : brew install --cask virtualbox
 
     - Install Kubectl: brew install kubectl
@@ -181,7 +196,5 @@
 
 
 **Troubleshooting**: 
+
      - If the "minikube start" failed with "Error starting host", run the command "open ~/.minikube/" and delete the "machines" directory.
-
-
-curl -sX POST http://localhost:8085/connectors -d @elasticsearch-sink.json --header "Content-Type: application/json"

@@ -22,6 +22,7 @@ import java.util.Random;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -41,7 +42,7 @@ public class XmlRecordsGenerator {
   @Autowired
   private UserProfileRepository userProfileRepository;
 
-  public void loadCSVValues(String resourcePath) throws Exception {
+  public void loadCSVValues() throws Exception {
     List<String> randomStrings = new ArrayList<>();
     randomStrings.add(FIRST_NAMES);
     randomStrings.add(LAST_NAMES);
@@ -49,8 +50,9 @@ public class XmlRecordsGenerator {
     for (String randomString : randomStrings) {
       if (cacheMap.get(randomString) == null) {
         List<String> values = new ArrayList<>();
-        BufferedReader br = new BufferedReader(
-            new FileReader(resourcePath + randomString + ".csv"));
+        File f = ResourceUtils.getFile("classpath:loaderinput/" + randomString + ".csv");
+        BufferedReader br = new BufferedReader(new FileReader(f));
+
         String line;
         while ((line = br.readLine()) != null) {
           values.add(line);
@@ -59,14 +61,14 @@ public class XmlRecordsGenerator {
       }
     }
     if (addresses.isEmpty()) {
-      createAddressModels(resourcePath);
+      createAddressModels();
     }
   }
 
-  private void createAddressModels(String resourcePath) throws IOException {
+  private void createAddressModels() throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
     AddressGen addressGen = objectMapper
-        .readValue(new File(resourcePath + ADDRESSES_JSON), AddressGen.class);
+        .readValue(ResourceUtils.getFile("classpath:loaderinput/" + ADDRESSES_JSON), AddressGen.class);
 
     for (AddressUnit addressUnit : addressGen.getAddresses()) {
       Address address = new Address();
@@ -112,7 +114,7 @@ public class XmlRecordsGenerator {
     }
     sb.append("</orders>\n");
     FileWriter fw = new FileWriter(
-        "orders/order-" + UUID.randomUUID().toString() + ".xml");
+        "data/orders/order-" + UUID.randomUUID().toString() + ".xml");
     fw.write(sb.toString());
     fw.close();
   }

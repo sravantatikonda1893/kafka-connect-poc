@@ -35,11 +35,11 @@ public class GenController {
   @GetMapping(value = "/loader/{usersCount}/{filesCount}/{recordCount}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Boolean> load(@PathVariable Integer usersCount,
       @PathVariable Integer filesCount, @PathVariable Integer recordCount) throws Exception {
-    xmlRecordsGenerator.loadCSVValues(
-        "/Users/sravantatikonda/POC/kafka-connect-poc/src/main/resources/loaderinput/");
+    xmlRecordsGenerator.loadCSVValues();
     xmlRecordsGenerator.genXmlFiles(filesCount, recordCount);
     xmlRecordsGenerator.loadUserTable(usersCount);
-    log.info("Successfully created");
+    log.info("Successfully created {} users, {} order files with {} orders in each order file",
+        usersCount, filesCount, recordCount);
     return new ResponseEntity<>(true, HttpStatus.OK);
   }
 }

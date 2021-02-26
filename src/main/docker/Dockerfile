@@ -5,4 +5,5 @@ EXPOSE 9999
 VOLUME /tmp
 ADD maven/${fileName}.jar ${fileName}.jar
 RUN sh -c 'touch /${fileName}.jar'
+RUN mkdir -p /data/orders
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/${fileName}.jar"]

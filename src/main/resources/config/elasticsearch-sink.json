@@ -11,5 +11,5 @@
     "key.converter": "org.apache.kafka.connect.converters.IntegerConverter",
     "schema.ignore": "true"
   },
-  "name": "elastic-sink"
+  "name": "elasticsearch-sink-connector"
 }

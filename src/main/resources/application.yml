@@ -5,7 +5,7 @@ spring:
   application:
     name: kafka-connect
   datasource:
-    url: ${dbUrl:jdbc:postgresql://localhost:5432/postgres}
+    url: ${dbUrl:jdbc:postgresql://192.168.1.170:5432/postgres}
     username: ${dbUsername:postgres}
     password: ${dbPassword:123}
     driver-class-name: org.postgresql.Driver

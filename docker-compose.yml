@@ -170,7 +170,7 @@ services:
       # Uncomment for debugging the connector during development cycle
       # KAFKA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
     volumes:
-      - ./orders/:/tmp/kafka-connect/orders
+      - ../container_mount/orders/:/tmp/kafka-connect/orders
 
   jdbc-connect:
     image: confluentinc/cp-kafka-connect:latest
@@ -321,6 +321,19 @@ services:
       - 5601:5601
     depends_on:
       - elasticsearch
+
+  kafka-connect-poc:
+    hostname: kafka-connect-poc
+    image: sravankf244/kafka-connect-poc:latest
+    container_name: kafka-connect-poc
+    environment:
+      MAX_HEAP_SIZE: 512m
+    ports:
+      - "9999:9999"
+    depends_on:
+      - postgres
+    volumes:
+      - ../container_mount/orders:data/orders-files
 
   elasticsearch-connect:
     hostname: elasticsearch-connect
