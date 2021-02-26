@@ -322,6 +322,50 @@ services:
     depends_on:
       - elasticsearch
 
+  elasticsearch-connect:
+    container_name: kafka-connect
+    image: confluentinc/cp-kafka-connect:5.3.1
+    ports:
+      - 8085:8085
+    depends_on:
+      cp-broker:
+        condition: service_healthy
+      cp-broker-1:
+        condition: service_healthy
+      cp-broker-2:
+        condition: service_healthy
+      cp-schema-registry:
+        condition: service_started
+      cp-zookeeper:
+        condition: service_started
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: 'broker:29092,broker_1:29093,broker_2:29094'
+      CONNECT_REST_PORT: 8085
+      CONNECT_GROUP_ID: compose-elasticsearch-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-elasticsearch-connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-elasticsearch-connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: docker-elasticsearch-connect-status
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_KEY_CONVERTER-SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER-SCHEMAS_ENABLE: "false"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "elasticsearch-connect"
+      CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
+      CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_PLUGIN_PATH: '/usr/share/java'
+      # Interceptor config
+      CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+      CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-5.3.1.jar
+    volumes:
+      - ../container_mount/elasticsearch-connect-plugins:/connect-plugins
+
+
 volumes:
   elasticsearch-data:
     driver: local
