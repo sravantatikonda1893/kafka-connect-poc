@@ -159,10 +159,11 @@
     SELECT count(*) FROM poc_schm.xml_space_emails;
 
 **Sinking topic stream data to ElasticSearch index**:
-    
-    curl -sX POST http://localhost:8085/connectors -d @elasticsearch-sink.json --header "Content-Type: application/json"
+    - Make sure the plugins are loaded: http://localhost:8085/connector-plugins
 
-    Go to Kibana Dashboard and check the index: 
+    - curl -sX POST http://localhost:8085/connectors -d @elasticsearch-sink.json --header "Content-Type: application/json"
+
+    - Go to Kibana Dashboard and check the index: 
 
 ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/KibanaIndex.png?raw=true)
 
@@ -198,3 +199,20 @@
 **Troubleshooting**: 
 
      - If the "minikube start" failed with "Error starting host", run the command "open ~/.minikube/" and delete the "machines" directory.
+
+**Start an individual container**: 
+
+    - docker-compose up -d elastic-search-connect
+    - docker-compose up -d ksqldb-cli
+    - docker-compose up -d primary-ksqldb-server
+    - docker-compose up -d jdbc-connect
+    - docker-compose up -d file-connect
+    - docker-compose up -d kafdrop-ui
+    - docker-compose up -d schema-registry
+    - docker-compose up -d broker_2
+    - docker-compose up -d broker_1
+    - docker-compose up -d broker
+    - docker-compose up -d kibana
+    - docker-compose up -d zookeeper
+    - docker-compose up -d postgres
+    - docker-compose up -d elasticsearch
