@@ -114,7 +114,7 @@ public class XmlRecordsGenerator {
     }
     sb.append("</orders>\n");
     FileWriter fw = new FileWriter(
-        "data/orders/order-" + UUID.randomUUID().toString() + ".xml");
+        "/Users/sravantatikonda/POC/container_mount/orders/order-" + UUID.randomUUID().toString() + ".xml");
     fw.write(sb.toString());
     fw.close();
   }

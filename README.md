@@ -159,6 +159,7 @@
     SELECT count(*) FROM poc_schm.xml_space_emails;
 
 **Sinking topic stream data to ElasticSearch index**:
+
     - Make sure the plugins are loaded: http://localhost:8085/connector-plugins
 
     - curl -sX POST http://localhost:8085/connectors -d @elasticsearch-sink.json --header "Content-Type: application/json"
@@ -216,3 +217,13 @@
     - docker-compose up -d zookeeper
     - docker-compose up -d postgres
     - docker-compose up -d elasticsearch
+
+
+**Setup**:
+
+    - Clone this repo: https://github.com/confluentinc/kafka-connect-elasticsearch
+    - mvn clean package
+    - Copy the contents of the target folder to the plugins path for elasticsearch connect
+
+docker stop (docker ps -a -q)
+docker rm (docker ps -a -q)

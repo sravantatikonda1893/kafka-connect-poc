@@ -3,7 +3,7 @@
     "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
     "type.name": "valid_emails_index",
     "key.converter.schemas.enable": "false",
-    "topics": "VALID_EMAILS_STREAM",
+    "topics": "user_records",
     "tasks.max": "5",
     "poll.interval.ms":"5000",
     "timestamp.delay.interval.ms":"1000",
