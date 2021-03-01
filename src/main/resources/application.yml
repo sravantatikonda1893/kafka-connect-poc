@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: kafka-connect
+    name: kafka-connect-poc
   datasource:
     url: ${dbUrl:jdbc:postgresql://192.168.1.170:5432/postgres}
     username: ${dbUsername:postgres}
@@ -23,3 +23,7 @@ spring:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyHbmImpl
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
     show-sql: true
+
+logging:
+  file:
+    path: ${logPath:/Users/sravantatikonda/POC/container_mount}

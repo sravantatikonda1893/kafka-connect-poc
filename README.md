@@ -162,7 +162,9 @@
 
     - Make sure the plugins are loaded: http://localhost:8085/connector-plugins
 
-    - curl -sX POST http://localhost:8085/connectors -d @elasticsearch-sink.json --header "Content-Type: application/json"
+    - curl -sX POST http://localhost:8085/connectors -d @elasticsearch-orders-sink.json --header "Content-Type: application/json"
+
+    - curl -sX POST http://localhost:8085/connectors -d @elasticsearch-users-sink.json --header "Content-Type: application/json"
 
     - Go to Kibana Dashboard and check the index: 
 
@@ -180,7 +182,9 @@
 
     - curl -X DELETE localhost:8084/connectors/VALID_EMAILS_STREAM-sink-connector
 
-    - curl -X DELETE localhost:8085/connectors/elasticsearch-sink-connector
+    - curl -X DELETE localhost:8085/connectors/elastic-search-users-sink-connector
+
+    - curl -X DELETE localhost:8085/connectors/elastic-search-orders-sink-connector
 
 **Flow Diagram**:
     
@@ -225,5 +229,13 @@
     - mvn clean package
     - Copy the contents of the target folder to the plugins path for elasticsearch connect
 
-docker stop (docker ps -a -q)
-docker rm (docker ps -a -q)
+**Access the ES Index**:
+
+    - curl -s http://localhost:9200/orders/_search -H 'content-type: application/json' -d '{ "size":42 }'
+
+    - curl -s http://localhost:9200/user_records/_search -H 'content-type: application/json' -d '{ "size":42 }'
+
+**MISC Docker**:
+
+    - docker stop (docker ps -a -q)
+    - docker rm (docker ps -a -q)
