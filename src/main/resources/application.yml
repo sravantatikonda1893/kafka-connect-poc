@@ -3,9 +3,9 @@ server:
 
 spring:
   application:
-    name: kafka-connect
+    name: kafka-connect-poc
   datasource:
-    url: ${dbUrl:jdbc:postgresql://localhost:5432/postgres}
+    url: ${dbUrl:jdbc:postgresql://192.168.1.170:5432/postgres}
     username: ${dbUsername:postgres}
     password: ${dbPassword:123}
     driver-class-name: org.postgresql.Driver
@@ -23,3 +23,7 @@ spring:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyHbmImpl
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
     show-sql: true
+
+logging:
+  file:
+    path: ${LOG_PATH:/Users/sravantatikonda/POC/container_mount}

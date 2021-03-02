@@ -1,4 +1,4 @@
-version: '3'
+version: '2.1'
 services:
   cp-zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -170,7 +170,7 @@ services:
       # Uncomment for debugging the connector during development cycle
       # KAFKA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
     volumes:
-      - ./orders/:/tmp/kafka-connect/orders
+      - ../container_mount/orders/:/tmp/kafka-connect/orders
 
   jdbc-connect:
     image: confluentinc/cp-kafka-connect:latest
@@ -211,7 +211,7 @@ services:
       CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       CONNECT_PLUGIN_PATH: '/usr/share/java,/etc/kafka-connect/jars'
     volumes:
-      - ../container_mount/jdbc-connect-jars/confluentinc-kafka-connect-jdbc-10.0.1/lib:/etc/kafka-connect/jars
+      - ../container_mount/plugins/confluentinc-kafka-connect-jdbc-10.0.1/lib:/etc/kafka-connect/jars
 
   primary-ksqldb-server:
     image: confluentinc/cp-ksql-server:5.2.2
@@ -290,3 +290,90 @@ services:
       - PGDATA=/pgdata
     volumes:
      - ../container_mount/pgdata:/pgdata
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
+    container_name: elasticsearch
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ../container_mount/elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.4.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+
+  kafka-connect-poc:
+    hostname: kafka-connect-poc
+    image: sravankf244/kafka-connect-poc:latest
+    container_name: kafka-connect-poc
+    environment:
+      MAX_HEAP_SIZE: 512m
+      LOG_PATH: /data/logs
+    ports:
+      - "9999:9999"
+    depends_on:
+      - postgres
+    volumes:
+      - /Users/sravantatikonda/POC/container_mount/orders:/data/orders
+      - /Users/sravantatikonda/POC/container_mount/logs:/data/logs
+
+  elastic-search-connect:
+    image: confluentinc/cp-kafka-connect
+    container_name: elastic-search-connect
+    hostname: elastic-search-connect
+    restart: always
+    depends_on:
+      cp-broker:
+        condition: service_healthy
+      cp-broker-1:
+        condition: service_healthy
+      cp-broker-2:
+        condition: service_healthy
+      cp-schema-registry:
+        condition: service_started
+      cp-zookeeper:
+        condition: service_started
+    ports:
+      - "8085:8085"
+    volumes:
+      - ../container_mount/plugins/kafka-connect-elasticsearch-master:/usr/share/confluent-hub-components
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: 'broker:29092,broker_1:29093,broker_2:29094'
+      CONNECT_REST_ADVERTISED_HOST_NAME: elastic-search-connect
+      CONNECT_REST_PORT: 8085
+      CONNECT_GROUP_ID: compose-elastic-search-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-elastic-search-connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-elastic-search-connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: docker-elastic-search-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONNECT_PLUGIN_PATH: '/usr/share/java,/usr/share/confluent-hub-components'

@@ -5,7 +5,7 @@
 		"connection.user": "postgres",
 		"connection.password": "123",
 		"auto.create": true,
-		"table.name.format": "poc_schm.valid_emails",
+		"table.name.format": "poc_schm.xml_space_emails",
 		"topics": "XML_SPACE_EMAILS_STREAM",
 		"tasks.max": 5,
 		"poll.interval.ms":"5000",
