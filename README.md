@@ -121,6 +121,12 @@
    
     * Go to Kafdrop UI, a new topic named: "VALID_EMAILS_STREAM", as the new messages to the user_records and orders topics flows, the VALID_EMAILS_STREAM will be updated based on the join condition we used.
     
+    * Create an aggregate of order count:
+
+   CREATE TABLE user_orders_count_stream AS
+   Select os.Email, urs.user_id, urs.first_name, urs.last_name, count(os.email) as orders_count
+   from orders_stream_topic os inner join user_records_stream_topics urs within 1 HOURS ON os.Email = urs.email
+   Group By (os.Email,URS.LAST_NAME, URS.USER_ID, URS.FIRST_NAME);
 
 5. *Create a stream with "empty"  in the email column in the user records table*:
    
@@ -223,5 +229,5 @@
 
 **MISC Docker**:
 
-    - docker stop (docker ps -a -q)
-    - docker rm (docker ps -a -q)
+    - Stop all containers: docker stop (docker ps -a -q)
+    - Remove all stopped containers: docker rm (docker ps -a -q)
