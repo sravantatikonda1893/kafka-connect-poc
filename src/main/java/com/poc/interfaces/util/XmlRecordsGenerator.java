@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,8 +52,9 @@ public class XmlRecordsGenerator {
     for (String randomString : randomStrings) {
       if (cacheMap.get(randomString) == null) {
         List<String> values = new ArrayList<>();
-        File f = ResourceUtils.getFile("classpath:loaderinput/" + randomString + ".csv");
-        BufferedReader br = new BufferedReader(new FileReader(f));
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+            XmlRecordsGenerator.class.getClassLoader().getResourceAsStream("loaderinput/" + randomString + ".csv")));
 
         String line;
         while ((line = br.readLine()) != null) {
@@ -68,7 +71,7 @@ public class XmlRecordsGenerator {
   private void createAddressModels() throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
     AddressGen addressGen = objectMapper
-        .readValue(ResourceUtils.getFile("classpath:loaderinput/" + ADDRESSES_JSON), AddressGen.class);
+        .readValue(XmlRecordsGenerator.class.getClassLoader().getResourceAsStream("loaderinput/" + ADDRESSES_JSON), AddressGen.class);
 
     for (AddressUnit addressUnit : addressGen.getAddresses()) {
       Address address = new Address();
@@ -114,7 +117,7 @@ public class XmlRecordsGenerator {
     }
     sb.append("</orders>\n");
     FileWriter fw = new FileWriter(
-        "/Users/sravantatikonda/POC/container_mount/orders/order-" + UUID.randomUUID().toString() + ".xml");
+        "/data/orders/order-" + UUID.randomUUID().toString() + ".xml");
     fw.write(sb.toString());
     fw.close();
   }

@@ -26,4 +26,4 @@ spring:
 
 logging:
   file:
-    path: ${logPath:/Users/sravantatikonda/POC/container_mount}
+    path: ${LOG_PATH:/Users/sravantatikonda/POC/container_mount}

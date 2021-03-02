@@ -328,12 +328,14 @@ services:
     container_name: kafka-connect-poc
     environment:
       MAX_HEAP_SIZE: 512m
+      LOG_PATH: /data/logs
     ports:
       - "9999:9999"
     depends_on:
       - postgres
     volumes:
-      - /Users/sravantatikonda/POC/container_mount/logs:/data
+      - /Users/sravantatikonda/POC/container_mount/orders:/data/orders
+      - /Users/sravantatikonda/POC/container_mount/logs:/data/logs
 
   elastic-search-connect:
     image: confluentinc/cp-kafka-connect

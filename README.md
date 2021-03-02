@@ -190,20 +190,6 @@
     
 ![alt text](https://github.com/sravantatikonda1893/kafka-connect-poc/blob/master/Flow%20Diagram.png?raw=true)
 
-**Setting up Kubernetes in MacBook**:
-
-    - Install Oracle VirtualBox : brew install --cask virtualbox
-
-    - Install Kubectl: brew install kubectl
-
-    - Install Minikube: curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.27.0/minikube-darwin-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
-
-    - Start Minikube: minikube start
-
-
-**Troubleshooting**: 
-
-     - If the "minikube start" failed with "Error starting host", run the command "open ~/.minikube/" and delete the "machines" directory.
 
 **Start an individual container**: 
 
