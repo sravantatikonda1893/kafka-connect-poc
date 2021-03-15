@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3.4'
 services:
   cp-zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -292,10 +292,19 @@ services:
      - ../container_mount/pgdata:/pgdata
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
     container_name: elasticsearch
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1" ]
+      interval: 30s
+      timeout: 30s
+      retries: 3
     environment:
+      - http.host=0.0.0.0
+      - transport.host=localhost
+      - network.host=0.0.0.0
       - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - discovery.type=single-node
     ulimits:
       memlock:
@@ -324,7 +333,7 @@ services:
 
   kafka-connect-poc:
     hostname: kafka-connect-poc
-    image: sravankf244/kafka-connect-poc:latest
+    image: sravankf244/kafka-connect-poc:1.0.0
     container_name: kafka-connect-poc
     environment:
       MAX_HEAP_SIZE: 512m
@@ -377,3 +386,44 @@ services:
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       CONNECT_PLUGIN_PATH: '/usr/share/java,/usr/share/confluent-hub-components'
+
+  mongodb:
+    image: mongo:3
+    container_name: mongodb
+    hostname: mongodb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    volumes:
+      - ../container_mount/graylog/mongo_data:/data/db
+
+  graylog:
+    image: graylog/graylog:4.0.5
+    container_name: graylog
+    hostname: graylog
+    volumes:
+      - ../container_mount/graylog/graylog_journal:/usr/share/graylog/data/journal:rw
+    environment:
+      - GRAYLOG_HTTP_EXTERNAL_URI=http://0.0.0.0:8080/
+      - rest_listen_uri=http://0.0.0.0:8080/
+      - rest_transport_uri=http://192.168.1.170:8080
+      - web_listen_uri=http://0.0.0.0:8080
+    links:
+      - mongodb:mongo
+      - elasticsearch
+      - kafka-connect-poc
+    restart: always
+    depends_on:
+      elasticsearch:
+         condition: service_healthy
+      mongodb:
+        condition: service_started
+    ports:
+      - 8080:9000
+      - 514:514
+      - 514:514/udp
+      - 12201:12201
+      - 12201:12201/udp
