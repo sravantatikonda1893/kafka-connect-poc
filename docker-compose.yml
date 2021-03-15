@@ -408,9 +408,9 @@ services:
       - ../container_mount/graylog/graylog_journal:/usr/share/graylog/data/journal:rw
     environment:
       - GRAYLOG_HTTP_EXTERNAL_URI=http://0.0.0.0:8080/
-      - rest_listen_uri = http://0.0.0.0:8080/
-      - rest_transport_uri = http://192.168.1.170:8080
-      - web_listen_uri = http://0.0.0.0:8080
+      - rest_listen_uri=http://0.0.0.0:8080/
+      - rest_transport_uri=http://192.168.1.170:8080
+      - web_listen_uri=http://0.0.0.0:8080
     links:
       - mongodb:mongo
       - elasticsearch
